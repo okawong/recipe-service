@@ -1,0 +1,73 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.5.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath 'com.google.cloud.tools:appengine-gradle-plugin:2.2.0'
+	}
+}
+
+plugins {
+	id 'org.springframework.boot' version '2.3.1.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'java'
+	id 'war'
+}
+
+apply plugin: 'com.google.cloud.tools.appengine'
+
+
+group = 'com.okawong'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springCloudVersion', "Hoxton.SR6")
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter', version: '1.2.3.RELEASE'
+	compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql-postgresql', version: '1.2.3.RELEASE'
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+	implementation group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
+	compileOnly('org.projectlombok:lombok')
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
+
+configurations.all {
+	exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+	exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+}
+
+appengine {
+
+	deploy {
+		stopPreviousVersion = true
+		promote = true
+		version = "GCLOUD_CONFIG"
+		projectId = "GCLOUD_CONFIG"
+	}
+}
