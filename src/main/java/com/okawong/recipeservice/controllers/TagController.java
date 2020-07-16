@@ -1,27 +1,26 @@
 package com.okawong.recipeservice.controllers;
 
+import com.okawong.recipeservice.exceptions.tag.TagNotFoundException;
 import com.okawong.recipeservice.models.Tag;
 import com.okawong.recipeservice.models.requests.v1.PostTagRequest;
 import com.okawong.recipeservice.models.responses.v1.TagResponse;
 import com.okawong.recipeservice.repositories.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("tags")
 public class TagController {
 
     @Autowired
     private TagRepository tagRepository;
 
-    @GetMapping(value = "/tags", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping
     public List<TagResponse> getAllTags() {
         return tagRepository.findAll()
                 .stream()
@@ -29,7 +28,14 @@ public class TagController {
                 .collect(Collectors.toList());
     }
 
-    @PostMapping("/tags")
+    @GetMapping("{id}")
+    public TagResponse getTagById(@PathVariable UUID id) {
+        final Tag tag = tagRepository.findById(id)
+                .orElseThrow(() -> new TagNotFoundException(id));
+        return TagResponse.fromTag(tag);
+    }
+
+    @PostMapping
     public TagResponse createTag(@Valid @RequestBody PostTagRequest postTagRequest) {
         final Tag tag = new Tag(postTagRequest.getName());
         return TagResponse.fromTag(tagRepository.save(tag));
