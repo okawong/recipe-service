@@ -1,11 +1,15 @@
 package com.okawong.recipeservice.controllers;
 
 import com.okawong.recipeservice.exceptions.tag.TagNotFoundException;
+import com.okawong.recipeservice.exceptions.tag.DuplicateTagException;
 import com.okawong.recipeservice.models.Tag;
 import com.okawong.recipeservice.models.requests.v1.PostTagRequest;
 import com.okawong.recipeservice.models.responses.v1.TagResponse;
 import com.okawong.recipeservice.repositories.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -38,6 +42,20 @@ public class TagController {
     @PostMapping
     public TagResponse createTag(@Valid @RequestBody PostTagRequest postTagRequest) {
         final Tag tag = new Tag(postTagRequest.getName());
-        return TagResponse.fromTag(tagRepository.save(tag));
+        try {
+            return TagResponse.fromTag(tagRepository.save(tag));
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateTagException();
+        }
+    }
+
+    @DeleteMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteTag(@PathVariable UUID id) {
+        try {
+            tagRepository.deleteById(id);
+        } catch(EmptyResultDataAccessException e) {
+            throw new TagNotFoundException(id);
+        }
     }
 }

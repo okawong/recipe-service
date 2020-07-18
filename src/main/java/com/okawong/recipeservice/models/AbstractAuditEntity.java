@@ -2,6 +2,8 @@ package com.okawong.recipeservice.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -17,6 +19,7 @@ import java.time.Instant;
         value = {"creationTime", "lastUpdatedTime"},
         allowGetters =  true
 )
+@Where(clause = "deletion_time IS NULL")
 public abstract class AbstractAuditEntity {
     private static final long serialVersionUID = 123212L;
 
@@ -30,4 +33,11 @@ public abstract class AbstractAuditEntity {
 
     @Column(name = "deletion_time")
     protected Instant deletionTime;
+
+    public AbstractAuditEntity(Instant creationTime) {
+        this.creationTime = creationTime;
+        this.lastUpdatedTime = creationTime;
+    }
+
+    public AbstractAuditEntity() {}
 }
