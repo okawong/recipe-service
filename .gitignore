@@ -33,3 +33,5 @@ out/
 
 ### DS STORE ###
 .DS_STORE
+
+/bin/
